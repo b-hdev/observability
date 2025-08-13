@@ -1,0 +1,114 @@
+auth_enabled: false
+
+server:
+  http_listen_address: 0.0.0.0
+  http_listen_port: 3100
+
+memberlist:
+  join_members: ["loki"]
+  dead_node_reclaim_time: 30s
+  gossip_to_dead_nodes_time: 15s
+  bind_addr: ['0.0.0.0']
+  bind_port: 7946
+  advertise_addr: 127.0.0.1
+  gossip_interval: 2s
+
+# TSDB com Filesystem - como você quer
+schema_config:
+  configs:
+    - from: 2025-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  discover_log_levels: true
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+  max_global_streams_per_user: 10000
+
+# Configuração para filesystem persistente
+common:
+  path_prefix: /loki
+  replication_factor: 1
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  ring:
+    kvstore:
+      store: memberlist
+
+# Storage config para filesystem
+storage_config:
+  filesystem:
+    directory: /loki/chunks
+
+# Index gateway
+index_gateway:
+  mode: simple
+
+# Compactor
+compactor:
+  working_directory: /loki/compactor
+
+# Ruler com S3 para rules
+ruler:
+  storage:
+    type: s3
+    s3:
+      endpoint: minio:9000
+      bucketnames: loki-ruler
+      access_key_id: loki
+      secret_access_key: "++loki++"
+      insecure: true
+      s3forcepathstyle: true
+      http_config:
+        idle_conn_timeout: 90s
+        response_header_timeout: 0s
+        insecure_skip_verify: true
+
+# Ingester
+ingester:
+  chunk_idle_period: 3m
+  max_chunk_age: 1h
+  chunk_retain_period: 30s
+  chunk_encoding: snappy
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: memberlist
+      replication_factor: 1
+
+# Distributor
+distributor:
+  ring:
+    kvstore:
+      store: memberlist
+
+# Query scheduler
+query_scheduler:
+  max_outstanding_requests_per_tenant: 1024
+
+# Querier
+querier:
+  max_concurrent: 2048
+
+# Frontend
+frontend:
+  max_outstanding_per_tenant: 1024
+  compress_responses: true
+
+# Cache
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 256
