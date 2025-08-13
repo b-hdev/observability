@@ -31,9 +31,9 @@ exporters:
     tls:
       insecure: true
   otlp/traces:
-      endpoint: http://tempo:4317
-      tls:
-        insecure: true
+    endpoint: tempo:4317
+    tls:
+      insecure: true
   prometheus:
     endpoint: 0.0.0.0:8889
     resource_to_telemetry_conversion:
@@ -43,7 +43,7 @@ exporters:
     tls:
       insecure: true
   prometheusremotewrite:
-    endpoint: http://mimir:9090/api/v1/push
+    endpoint: http://mimir:9009/otlp/v1/push
     tls:
       insecure: true
 

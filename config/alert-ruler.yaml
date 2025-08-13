@@ -1,0 +1,10 @@
+groups:
+- name: test-group
+  rules:
+  - alert: TestAlert
+    expr: sum(rate({service_name="obs-app"}[5m])) > 0
+    for: 0s
+    labels:
+      severity: info
+    annotations:
+      summary: Test alert for obs-app
